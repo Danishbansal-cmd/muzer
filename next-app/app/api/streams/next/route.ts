@@ -5,7 +5,7 @@ import Stream from "stream";
 
 export async function GET(req: NextRequest){
     const session = await getServerSession();
-
+    // TODO: You can get rid of the db call here
     const user = await prismaClient.user.findFirst({
         where: {
             email: session?.user?.email ?? ""
@@ -22,7 +22,8 @@ export async function GET(req: NextRequest){
 
     const mostUpvotedStream = await prismaClient.stream.findFirst({
         where: {
-            userId: user.id
+            userId: user.id,
+            played: false
         },
         orderBy: {
             upvotes: {
@@ -30,8 +31,8 @@ export async function GET(req: NextRequest){
             }
         }
     });
-
-    // to be continued here also
+    
+    // to be continued here
     // await Promise.all([prismaClient.currentStream.upsert({
     //     where: {
     //         userId: user.id
@@ -43,10 +44,14 @@ export async function GET(req: NextRequest){
     //         userId: user.id,
     //         streamId: mostUpvotedStream?.id
     //     }
-    // }), prismaClient.currentStream.delete({
+    // }), prismaClient.stream.update({
     //     where: {
-    //         streamId: mostUpvotedStream?.id ?? ""
+    //         id: mostUpvotedStream?.id ?? "",
     //     },
+    //     data: {
+    //         played: true,
+    //         playedTs : new Date()
+    //     }
     // })])
 
     return NextResponse.json({

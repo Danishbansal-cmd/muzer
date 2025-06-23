@@ -11,6 +11,8 @@ const CreateStreamSchema = z.object({
     url: z.string() // has youtube or spotify inside
 })
 
+const MAX_QUEUE_LEN = 20;
+
 export async function POST(req: NextRequest){
     try{
         const data = CreateStreamSchema.parse(await req.json());
@@ -26,14 +28,44 @@ export async function POST(req: NextRequest){
 
         const extractedId = data.url.split("?v=")[1];
         const res = await youtubesearchapi.GetVideoDetails(extractedId);
-        console.log(res);
-        console.log(JSON.stringify(res.thumbnail.thumbnail));
+        
         const thumbnails = res.thumbnail.thumbnails;
         thumbnails.sort((a: {width: number}, b: {width: number}) => a.width < b.width ? -1 : 1);
+
+        const session = await getServerSession();
+        // TODO: You can get rid of the db call here
+        const user = await prismaClient.user.findFirst({
+            where: {
+                email: session?.user?.email ?? ""
+            }
+        });
+
+        if(!user){
+            return NextResponse.json({
+                message: "Unautenticated"
+            },{
+                status: 403
+            })
+        }
+
+        const existingActiveStream = await prismaClient.stream.count({
+            where: {
+                userId: data.creatorId
+            }
+        })
+
+        if(existingActiveStream > MAX_QUEUE_LEN){
+            return NextResponse.json({
+                message: "Already at limit"
+            },{
+                status: 403
+            })
+        }
 
         const stream = await prismaClient.stream.create({
             data: {
                 userId: data.creatorId,
+                addedById: user.id,
                 url: data.url,
                 extractedId,
                 type: "Youtube",
@@ -84,9 +116,10 @@ export async function GET(req: NextRequest){
             status: 411
         })
     }
-    const streams = await prismaClient.stream.findMany({
+    const [streams, activeStream] = await Promise.all([await prismaClient.stream.findMany({
         where: {
-            userId: creatorId
+            userId: creatorId,
+            played: false
         },
         include: {
             _count: {
@@ -100,14 +133,22 @@ export async function GET(req: NextRequest){
                 }
             }
         }
-    });
+    }), await prismaClient.currentStream.findFirst({
+        where: {
+            userId: creatorId
+        },
+        include: {
+            stream: true
+        }
+    })]);
 
     return NextResponse.json({
         streams: streams.map(({_count, ...rest}) => ({
             ...resizeTo,
             upvotes: _count.upvotes,
             haveUpvoted: rest.upvotes.length ? true : false
-        }))
+        })),
+        activeStream
     }) 
 }
 

@@ -1,11 +1,11 @@
-import Image from "next/image";
-import { AppBar } from "./components/Appbar";
+import { AppBar } from "../components/Appbar";
 
 export default function Home() {
   return (
-    <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
       {/* learn context api */}
-      <AppBar />
-    </main>
+      <AppBar showThemeSwitch={false}/>
+      <main></main>
+    </div>
   );
 }

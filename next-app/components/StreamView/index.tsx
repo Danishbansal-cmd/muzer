@@ -4,8 +4,8 @@ import { Card, CardContent } from "../ui/card";
 import { Play } from "lucide-react";
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
-import { YT_REGEX } from "@/app/lib/utils";
-import { AppBar } from "@/app/components/Appbar";
+import { YT_REGEX } from "@/lib/utils";
+import { AppBar } from "@/components/Appbar";
 import { Button } from "../ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 //@ts-ignore
@@ -152,7 +152,7 @@ export default function StreamView({ creatorId, playVideo = false, spaceId }: {
 
     return (
         <div className="flex flex-col min-h-screen bg=[rgb(10,10,10)] text-gray-200">
-            <AppBar />
+            <AppBar showThemeSwitch={false}/>
             <div className="flex justify-cneter">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-5 w-screen max-w-screen-xl pt-8 ">
                     <div className="col-span-3">

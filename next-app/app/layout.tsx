@@ -1,17 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { Providers } from "./providers";
+import { Providers, ThemeProvider } from "./providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// to be continued here
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -26,14 +19,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.className} bg-[#1b1934b2]`}
       >
-        {/* we have created this providers component otherwise would need to use SessionProvider component from
-        next-auth library, which demands to use "use client" on top of this page, which attracts lots of issues so 
-        we created this component which returns the SessionProvider and use safely the "use client" */}
-        <Providers>
-        {children}
-        </Providers>
+        <ThemeProvider attribute="class" defaultTheme="system" disableTransitionOnChange enableSystem>
+          {/* we have created this providers component otherwise would need to use SessionProvider component from
+          next-auth library, which demands to use "use client" on top of this page, which attracts lots of issues so 
+          we created this component which returns the SessionProvider and use safely the "use client" */}
+          <Providers>
+          {children}
+          </Providers>
+        </ThemeProvider>
       </body>
     </html>
   );
